@@ -1,0 +1,5 @@
+# Access token for Hugging Face.
+# See README.md for more information.
+
+model: microsoft/Phi-3.5-mini-instruct
+token: <hugging face access token here>
