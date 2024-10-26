@@ -37,7 +37,7 @@ if __name__ == '__main__':
     PROMPT = 'Write a poem about the fall of the Roman Empire.'
 
     config_data = read_config()
-    access_token = config_data['access_token']
+    access_token = config_data['token']
     model_name = config_data['model']
 
     cache_dir = os.path.join(repo_dir, 'model')
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     
     model.to(device)
     
-    inputs = tokenizer(PROMPT, return_tensors='pt')
+    inputs = tokenizer(PROMPT, return_tensors='pt').to(device)
 
     outputs = model.generate(**inputs, max_new_tokens=100)
 
