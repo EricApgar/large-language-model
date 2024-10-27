@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import yaml
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -56,10 +57,17 @@ if __name__ == '__main__':
     
     model.to(device)
     
+    start_time = time.time()
+
     inputs = tokenizer(PROMPT, return_tensors='pt').to(device)
 
     outputs = model.generate(**inputs, max_new_tokens=100)
+    # with torch.no_grad():
+    #     outputs = model.generate(**inputs, max_new_tokens=100)
 
-    outputs_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    outputs_text = tokenizer.decode(outputs[0], skip_special_tokens=True)  # do_sample=False
 
+    elapsed_time = time.time() - start_time
+
+    print(f'Elapsed Time: {elapsed_time:.2f} seconds.')
     print(outputs_text)
