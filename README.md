@@ -24,3 +24,12 @@ Check the [PyTorch](https://pytorch.org/) website and use their version selector
 | Package | Pip |
 | Compute Platform | CUDA 12.4 |
 
+# CPU vs GPU
+This will run on a CPU, but it runs so slowly that it's not a practical solution. So, while useful to know that it will work on the without one, it's not recommended that you run this unless you have a GPU available to use.
+
+## Time Comparison 
+
+| Device | Time |
+|-|-|
+| GPU Nvidia 3060 Ti | 52 sec |
+| CPU AMD Ryzen 5 3600 | 1 hr, 15 min |

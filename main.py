@@ -29,7 +29,7 @@ def get_device():
         print("GPU detected. Using GPU for inference.")
         return torch.device('cuda')
     else:
-        print("No GPU detected. Using CPU for inference.")
+        print("No GPU detected. Using CPU for inference. NOT RECOMMENDED.")
         return torch.device('cpu')
 
 
@@ -55,11 +55,11 @@ if __name__ == '__main__':
         token=access_token,
         cache_dir=cache_dir)
     
-    model.to(device)
-    
+    # model.to(device)  # Send the model to the GPU.
+
     start_time = time.time()
 
-    inputs = tokenizer(PROMPT, return_tensors='pt').to(device)
+    inputs = tokenizer(PROMPT, return_tensors='pt')#.to(device)
 
     outputs = model.generate(**inputs, max_new_tokens=100)
     # with torch.no_grad():
@@ -69,5 +69,12 @@ if __name__ == '__main__':
 
     elapsed_time = time.time() - start_time
 
+    # Check model device
+    # for param in model.parameters():
+    #     print(f"Model is on device: {param.device}")
+    #     break  # Only need to check the first parameter
+
     print(f'Elapsed Time: {elapsed_time:.2f} seconds.')
     print(outputs_text)
+
+
