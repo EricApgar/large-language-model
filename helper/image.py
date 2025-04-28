@@ -10,7 +10,7 @@ class Image():
         self._load_data(origin=origin)
 
     
-    def _load_data(self, origin, Union[PillowImage.Image, str]):
+    def _load_data(self, origin: Union[PillowImage.Image, str]):
         if isinstance(origin, PillowImage.Image):
             self.data = origin
         elif isinstance(origin, str):

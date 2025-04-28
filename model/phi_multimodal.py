@@ -13,7 +13,8 @@ from model.template import Template
 
 class PhiMultimodal(Template):
     def __init__(self, device: str=None, version: str='4'):
-        
+        super().__init__(device=device)
+
         SUPPORTED_VERSIONS = {
             '4': 'microsoft/Phi-4-multimodal-instruct'}
         
@@ -36,7 +37,7 @@ class PhiMultimodal(Template):
             quantization_config = None
             self.is_quantized = False
 
-        self.model = AutoModelForCausalLM(
+        self.model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=self.name,
             token=self.token,
             cache_dir=self.cache_dir,
@@ -93,6 +94,7 @@ class PhiMultimodal(Template):
         return
     
     def _tokenize(self, text: str=None, images: list[Image]=None) -> dict:
+        
         if images is not None:
             images = [image.data for image in images]
             image_tags = [''.join([f'<|image_{i+1}|>\n' for i, _ in enumerate(images)])]
@@ -134,7 +136,7 @@ class PhiMultimodal(Template):
 
 if __name__ == '__main__':
     model = PhiMultimodal()
-    model.load_model()
+    model.load_model(update=True)
 
     response = model.ask(prompt='Tell me a joke.')
 
