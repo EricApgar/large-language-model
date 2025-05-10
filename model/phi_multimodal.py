@@ -117,7 +117,7 @@ class PhiMultimodal(Template):
             return_tensors='pt').to(self.device)
 
         return tokens
-    
+
 
     def _get_attention(self, attention: str=None):
         ATTENTION_OPTIONS = ['flash_attention_2', 'eager']
