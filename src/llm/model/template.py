@@ -1,34 +1,37 @@
-import os
-import sys
 from abc import ABC, abstractmethod
 
 import torch
-import yaml
 
-repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(repo_dir)
-
-from helper.image import Image
+from llm.helper.image import Image
 
 
-class Template():
+class Template(ABC):
 
-    def __init__(self, device: str=None):
-        
-        self.name = None
+    def __init__(self, hf_token: str=None):
+
+        self.name: str = None
         self.model = None
         self.tokenizer = None
         self.embedder = None
-        self.device = None
-        self.token = None
-        self.cache_dir = os.path.join(repo_dir, 'model_cache')
-
-        self._set_device(device=device)
-        self._get_token()
+        self.device: torch.device = None
+        self.attention: str = None
+        self.hf_token: str = hf_token
+        self.location: str = None
+        self.quantization: str = None
 
 
     @abstractmethod
     def load_model(self):
+        pass
+
+
+    @abstractmethod
+    def _load_tokenizer(self):
+        pass
+
+
+    @abstractmethod
+    def _tokenize(self, text: str=None, images: list[Image]=None):
         pass
 
 
@@ -42,16 +45,6 @@ class Template():
         pass
 
 
-    @abstractmethod
-    def _tokenize(self, text: str=None, images: list[Image]=None):
-        pass
-
-
-    @abstractmethod
-    def _load_tokenizer(self):
-        pass
-
-
     def _set_device(self, device: str=None):
 
         if device:
@@ -62,7 +55,7 @@ class Template():
                 device = torch.device('cpu')
             else:
                 raise ValueError(f'Input arg "device" must be "cpu" or "gpu" but was {device}!')
-            
+
         else:
             if torch.cuda.is_available():
                 device_index = 0
@@ -76,17 +69,6 @@ class Template():
                 device = torch.device('cpu')
 
         self.device = device
-
-        return
-    
-
-    def _get_token(self):
-        config_file = os.path.join(repo_dir, 'config.yml')
-
-        with open(config_file, 'r') as file:
-            config_data = yaml.safe_load(file)
-
-        self.token = config_data['token']
 
         return
     
