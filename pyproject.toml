@@ -1,0 +1,37 @@
+[project]
+name = "llm"  # The pip install <name>.
+version = "0.1.0"
+description = "Library for easy use of LLMs."
+readme = "README.md"
+authors = [
+    { name = "Eric Apgar" }
+]
+urls = { "Homepage" = "https://github.com/EricApgar" }
+requires-python = ">=3.12"
+
+dependencies = [
+    "transformers>=4.57.1",
+    "torch",
+    "torchvision"
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true  # Only used for torch packages explicitly mapped below.
+
+# Route just these packages to the PyTorch index.
+[tool.uv.sources]
+torch = { index = "pytorch-cu130" }
+torchvision = { index = "pytorch-cu130" }
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}  # Important that this folder is the name of the folder where all the files sit under.
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["llm*"]  # The import <name>. Defined by the name of the folder under src.
