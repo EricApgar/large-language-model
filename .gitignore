@@ -162,5 +162,5 @@ cython_debug/
 #.idea/
 
 config.yml
-model_cache/*
-!model_cache/README.md
+src/llm/model_cache/*
+!src/llm/model_cache/README.md
