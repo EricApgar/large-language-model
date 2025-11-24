@@ -26,8 +26,8 @@ torch = { index = "pytorch-cu130" }
 torchvision = { index = "pytorch-cu130" }
 
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.setuptools]
 package-dir = {"" = "src"}  # Important that this folder is the name of the folder where all the files sit under.

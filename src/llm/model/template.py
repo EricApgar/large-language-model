@@ -2,46 +2,39 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from llm.helper.image import Image
-
 
 class Template(ABC):
 
     def __init__(self, hf_token: str=None):
 
-        self.name: str = None
-        self.model = None
-        self.tokenizer = None
-        self.embedder = None
-        self.device: torch.device = None
-        self.attention: str = None
         self.hf_token: str = hf_token
+        self.name: str = None
+
         self.location: str = None
+        self.remote: bool = False
+        self.commit: str = None
         self.quantization: str = None
 
+        self.device: torch.device = None
+        self.model = None
+
 
     @abstractmethod
-    def load_model(self):
+    def load(self,
+        location: str,
+        remote: bool=False,
+        commit: str=None,
+        quantization: str=None):
+
         pass
 
 
     @abstractmethod
-    def _load_tokenizer(self):
-        pass
+    def ask(
+        prompt: str=None,
+        max_tokens: int=256,
+        temperature: float=0.0) -> str:
 
-
-    @abstractmethod
-    def _tokenize(self, text: str=None, images: list[Image]=None):
-        pass
-
-
-    @abstractmethod
-    def ask(prompt: str=None, images: list[Image]=None):
-        pass
-
-
-    @abstractmethod
-    def embedd(self, text: str=None, images: list[Image]=None):
         pass
 
 

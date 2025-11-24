@@ -1,1 +1,0 @@
-This folder tracked for storage of downloaded models, but the contents are ignored.
