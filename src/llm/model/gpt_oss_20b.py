@@ -39,7 +39,7 @@ class GptOss20b(Template):
 
 
     def ask(self,
-        prompt: str=None,
+        prompt: str,
         max_tokens: int=256,
         temperature: float=0.1):
 

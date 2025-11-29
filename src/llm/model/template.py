@@ -25,6 +25,17 @@ class Template(ABC):
         remote: bool=False,
         commit: str=None,
         quantization: str=None):
+        '''
+        Load in the LLM with specific settings.
+
+        location: path to dir where the model should be saved to (if downloading),
+            or where the model is located (if referencing downloaded model).
+        remote: if True, location defines where a model will download to (if Hugging
+            Face has a more recent version). If False, location will define where
+            models are loaded from.
+        commit: specific git commit for a model.
+        quantization: work in progress. Currently unused.
+        '''
 
         pass
 
@@ -34,6 +45,15 @@ class Template(ABC):
         prompt: str=None,
         max_tokens: int=256,
         temperature: float=0.0) -> str:
+        '''
+        Ask the LLM a query.
+
+        prompt: text question or statement to make.
+        max_tokens: maximum number of generated tokens. If an answer requires
+            more than what is specified, the response will be cut off prematurely.
+        temperature: randomness in generating next token. Higher is more random. Zero
+            is deterministic.
+        '''
 
         pass
 
