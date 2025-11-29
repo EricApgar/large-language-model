@@ -22,22 +22,12 @@ class GptOss20b(Template):
         self.commit = commit
         self.quantization = quantization
 
-        # self.model = pipeline(
-        #     task='text-generation',
-        #     model=self.name,
-        #     torch_dtype='auto',
-        #     device_map=self.device,
-        #     token=self.hf_token,
-        #     cache_dir=self.location,
-        #     revision=self.commit,
-        #     trust_remote_code=self.remote)
-
         model_kwargs = {
             'cache_dir': self.location,
             'local_files_only': not self.remote}
 
         self.model = pipeline(
-            "text-generation",
+            task="text-generation",
             model="openai/gpt-oss-20b",
             dtype="auto",
             device_map=self.device,
@@ -56,15 +46,23 @@ class GptOss20b(Template):
         messages = [{
             "role": "user",
             "content": prompt}]
+        
+        kwargs = {}
+        if temperature == 0:
+            kwargs['do_sample'] = False
+        else:
+            kwargs['temperature'] = temperature
 
         full_response = self.model(
             messages,
             max_new_tokens=max_tokens,
-            temperature=temperature)
+            **kwargs)
 
         response = full_response[0]["generated_text"][-1]['content']
 
-        # Remove thinking process from response.
+        # Remove thinking process from response. If it didn't
+        # have enough tokens to finish thinking, the response
+        # will come out half complete (with thinking included).
         if 'assistantfinal' in response:
             response = response.split("assistantfinal", 1)[-1]
 
