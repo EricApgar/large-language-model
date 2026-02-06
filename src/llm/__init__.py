@@ -29,7 +29,7 @@ def __getattr__(name: str):
         from .model.selection import model
         return model
     if name == 'embedding':
-        from model.embed import EmbeddingModel
+        from .model.embed import EmbeddingModel
         return EmbeddingModel
     else:
         raise AttributeError(f'Module "llm" has no attribute {name!r}!')

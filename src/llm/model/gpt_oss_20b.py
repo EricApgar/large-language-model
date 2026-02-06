@@ -15,12 +15,15 @@ class GptOss20b(Template):
         location: str,
         remote: bool=False,
         commit: str=None,
-        quantization: str=None):
+        quantization: str=None,
+        device: str=None):
 
         self.location = location
         self.remote = remote
         self.commit = commit
         self.quantization = quantization
+
+        self._set_device(device=device)
 
         model_kwargs = {
             'cache_dir': self.location,
@@ -28,7 +31,7 @@ class GptOss20b(Template):
 
         self.model = pipeline(
             task="text-generation",
-            model="openai/gpt-oss-20b",
+            model=self.name,
             dtype="auto",
             device_map=self.device,
             token=self.hf_token,
