@@ -19,7 +19,8 @@ from typing import TYPE_CHECKING
 
 # Accessible namespaces.
 __all__ = [
-    'model'
+    'model',
+    'embedding'
 ]
 
 
@@ -27,5 +28,8 @@ def __getattr__(name: str):
     if name == 'model':
         from .model.selection import model
         return model
+    if name == 'embedding':
+        from model.embed import EmbeddingModel
+        return EmbeddingModel
     else:
         raise AttributeError(f'Module "llm" has no attribute {name!r}!')
