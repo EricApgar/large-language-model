@@ -1,8 +1,10 @@
 from .gpt_oss_20b import GptOss20b
+from .phi4_multmodal_instruct import Phi4MultimodalInstruct
 
 
 MODEL_DICT = {
-    'openai/gpt-oss-20b': GptOss20b
+    GptOss20b().name: GptOss20b,
+    Phi4MultimodalInstruct().name: Phi4MultimodalInstruct
 }
 
 
