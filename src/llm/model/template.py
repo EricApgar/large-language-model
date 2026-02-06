@@ -61,9 +61,16 @@ class Template(ABC):
     def _set_device(self, device: str=None):
 
         if device:
-            if device == 'gpu':
-                device_index = 0
-                device = torch.device(f'cuda:{device_index}')
+            if device.startswith('gpu'):
+                if device == 'gpu':
+                    device_index = 0
+                    device = torch.device(f'cuda:{device_index}')
+                else:
+                    device_index = int(device.split(':')[1])
+                    num_devices = torch.cuda.device_count()
+                    if device_index >= num_devices:
+                        raise ValueError(f'Max device index is {num_devices-1} but attempted to set at {device_index}!')
+                    device = torch.device(f'cuda:{device_index}')
             elif device == 'cpu':
                 device = torch.device('cpu')
             else:
