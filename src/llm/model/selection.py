@@ -1,5 +1,5 @@
 from .gpt_oss_20b import GptOss20b
-from .phi4_multmodal_instruct import Phi4MultimodalInstruct
+from .phi4_multimodal_instruct import Phi4MultimodalInstruct
 
 
 MODEL_DICT = {
