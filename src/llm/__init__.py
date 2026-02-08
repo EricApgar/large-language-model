@@ -14,22 +14,33 @@ model.load(
 response = model.ask(prompt='Tell me a joke.')
 '''
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any
 
 
-# Accessible namespaces.
-__all__ = [
-    'model',
-    'embedding'
-]
+__all__ = (
+    "model",
+    "embedding")
 
 
-def __getattr__(name: str):
-    if name == 'model':
+if TYPE_CHECKING:
+    from .model.selection import model
+    from .model.embed import EmbeddingModel
+
+
+def __getattr__(name: str) -> Any:
+    if name == "model":
         from .model.selection import model
+        globals()[name] = model
         return model
-    if name == 'embedding':
+
+    if name == "embedding":
         from .model.embed import EmbeddingModel
+        globals()[name] = EmbeddingModel
         return EmbeddingModel
-    else:
-        raise AttributeError(f'Module "llm" has no attribute {name!r}!')
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals().keys()) | set(__all__))
