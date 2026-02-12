@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
 
 def __getattr__(name: str) -> Any:
+
     if name == "model":
         from .model.selection import model
         globals()[name] = model
