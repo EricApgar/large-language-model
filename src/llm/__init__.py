@@ -24,19 +24,19 @@ __all__ = (
 
 
 if TYPE_CHECKING:
-    from .model.selection import model
-    from .model.embed import EmbeddingModel
+    from .models.selection import model
+    from .models.embed import EmbeddingModel
 
 
 def __getattr__(name: str) -> Any:
 
     if name == "model":
-        from .model.selection import model
+        from .models.selection import model
         globals()[name] = model
         return model
 
     if name == "embedding":
-        from .model.embed import EmbeddingModel
+        from .models.embed import EmbeddingModel
         globals()[name] = EmbeddingModel
         return EmbeddingModel
 

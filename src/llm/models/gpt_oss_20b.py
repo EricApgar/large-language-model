@@ -1,6 +1,6 @@
 from transformers import pipeline
 
-from llm.model.template import Template
+from llm.models.template import Template
 
 
 class GptOss20b(Template):
@@ -45,6 +45,9 @@ class GptOss20b(Template):
         prompt: str,
         max_tokens: int=256,
         temperature: float=0.1):
+
+        if not self.model:
+            raise ValueError('Must load model before using! (see model.load())')
 
         messages = [{
             "role": "user",

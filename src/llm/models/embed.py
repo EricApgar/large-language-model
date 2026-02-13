@@ -46,6 +46,9 @@ class EmbeddingModel:
 
     def embed(self, text: str):
 
+        if not self.model:
+            raise ValueError('Must load model before using! (see model.load())')
+
         embedding = self.model.encode(text, convert_to_tensor=True)
 
         return embedding

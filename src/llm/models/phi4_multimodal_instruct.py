@@ -1,6 +1,6 @@
 from transformers import AutoProcessor, AutoModelForCausalLM
 
-from llm.model.template import Template
+from llm.models.template import Template
 
 # from PIL import image as PillowImage
 
@@ -57,6 +57,9 @@ class Phi4MultimodalInstruct(Template):
         images: list=None,  # list[PillowImage.Image]
         max_tokens: int=256,
         temperature: float=0.1):
+
+        if not self.model:
+            raise ValueError('Must load model before using! (see model.load())')
 
         embedding = self.embed(text=prompt, images=images)
 
