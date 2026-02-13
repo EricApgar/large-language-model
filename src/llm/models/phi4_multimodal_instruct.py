@@ -45,7 +45,7 @@ class Phi4MultimodalInstruct(Template):
             low_cpu_mem_usage=True,
             # quantization_config=quantization_config,
             device_map=self.device,
-            trust_remote_code=self.remote,
+            trust_remote_code=True,  # self.remote,
             _attn_implementation='eager',
             torch_dtype='auto')
         
@@ -70,7 +70,7 @@ class Phi4MultimodalInstruct(Template):
         
         generate_ids = self.model.generate(
             **embedding,
-            eos_token_id=self.processor.tokenizer.eos_token_id
+            eos_token_id=self.processor.tokenizer.eos_token_id,
             **generation_args)
         
         # Decode the output (un-embed the output to convert to text).
@@ -117,7 +117,7 @@ class Phi4MultimodalInstruct(Template):
         # frame and 16 for single frame.
         self.processor = AutoProcessor.from_pretrained(
             pretrained_model_name_or_path=self.name,
-            trust_remote_code=self.remote,  # True
+            trust_remote_code=True,  # self.remote,
             num_crops=4)
         
         return
@@ -163,8 +163,8 @@ class Phi4MultimodalInstruct(Template):
 if __name__ == '__main__':
 
     # model = Phi4MultimodalInstruct()
-    # model.load(location=r'<full path to model cache>')
-    # response = model.ask(prompt='Describe the image.', images=[PillowImage])
+    # model.load(location=<path to model cache>)
+    # response = model.ask(prompt='What is the capital of France?')
     # print(response)
 
     pass
