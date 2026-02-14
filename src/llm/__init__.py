@@ -20,7 +20,8 @@ from typing import TYPE_CHECKING, Any
 
 __all__ = (
     "model",
-    "embedding")
+    "embedding",
+    'Conversation')
 
 
 if TYPE_CHECKING:
@@ -39,6 +40,11 @@ def __getattr__(name: str) -> Any:
         from .models.embed import EmbeddingModel
         globals()[name] = EmbeddingModel
         return EmbeddingModel
+    
+    if name == 'Conversation':
+        from .other.conversations import Conversation
+        globals()[name] = Conversation
+        return Conversation
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
