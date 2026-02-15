@@ -73,7 +73,9 @@ class GptOss20b(Template):
     def ask(self,
         prompt: str | HarmonyConversation,
         max_tokens: int=256,
-        temperature: float=0.1):
+        temperature: float=0.5,
+        repetition_penalty: float=1.12,
+        top_p: float=0.95):
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
@@ -83,6 +85,8 @@ class GptOss20b(Template):
         if isinstance(prompt, str):
             convo = Conversation()
             convo.add_response(role='user', text=prompt)
+        else:
+            convo = prompt
 
         render_cfg = RenderConversationConfig(auto_drop_analysis=True)
         prefill_ids = encoding.render_conversation_for_completion(
@@ -96,11 +100,11 @@ class GptOss20b(Template):
         # 3) Generate continuation tokens
         out = self.model.generate(
             input_ids=input_ids,
-            max_new_tokens=256,
+            max_new_tokens=max_tokens,
             do_sample=True,
-            temperature=0.7,
-            top_p=0.95,
-            repetition_penalty=1.12,
+            temperature=temperature,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
             eos_token_id=stop_token_ids,
             pad_token_id=self.tokenizer.eos_token_id)
 

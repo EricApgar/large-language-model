@@ -81,7 +81,7 @@ class Conversation:
 
     def add_response(self, role: str, text: str):
 
-        VALID_ROLES = ('user', 'system')
+        VALID_ROLES = ('user', 'assistant')
 
         if role not in VALID_ROLES:
             raise ValueError(f'Invalid role. Valid options are {VALID_ROLES}!')
@@ -101,10 +101,10 @@ class Conversation:
         Generate the full text of the conversation from pieces.
         '''
 
-        prompt = self.prompt + '\n\n'
+        prompt = self.overall_prompt + '\n\n'
 
         if self.context:
-            context = 'Context Start:\n' + ''.join([f'{i}\n\n' for i in self.context]) + 'Context End.\n\n'
+            context = 'Context Start:\n' + '\n'.join(self.context) + 'Context End.\n\n'
         else:
             context = ''
 
@@ -135,7 +135,7 @@ class Conversation:
         if self.context:
             context_block = '\n'.join([
                 "BACKGROUND CONTEXT (not part of the dialogue):",
-                ''.join([f'{i}\n' for i in self.context]),
+                '\n'.join(self.context),
                 "END BACKGROUND CONTEXT"])
 
             msgs.append(Message.from_role_and_content(Role.USER, context_block))
