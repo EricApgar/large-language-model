@@ -1,16 +1,10 @@
-from dataclasses import dataclass
-
 import torch
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from openai_harmony import (
     HarmonyEncodingName,
     load_harmony_encoding,
     Conversation as HarmonyConversation,
-    Message,
     Role,
-    SystemContent,
-    DeveloperContent,
-    ReasoningEffort,
     RenderConversationConfig)
 
 from llm.models.template import Template
@@ -23,6 +17,7 @@ class GptOss20b(Template):
         super().__init__(hf_token=hf_token)
 
         self.name = 'openai/gpt-oss-20b'
+        self.tokenizer = None
 
 
     def load(self,
@@ -39,19 +34,6 @@ class GptOss20b(Template):
 
         self._set_device(device=device)
 
-        model_kwargs = {
-            'cache_dir': self.location,
-            'local_files_only': not self.remote}
-
-        # self.model = pipeline(
-        #     task="text-generation",
-        #     model=self.name,
-        #     dtype="auto",
-        #     device_map=self.device,
-        #     token=self.hf_token,
-        #     revision=self.commit,
-        #     model_kwargs=model_kwargs)
-        
         self.model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=self.name,
             token=self.hf_token,
@@ -61,9 +43,9 @@ class GptOss20b(Template):
             low_cpu_mem_usage=True,
             # quantization_config=quantization_config,
             device_map=self.device,
-            trust_remote_code=True,  # self.remote,
+            trust_remote_code=True,  # self.remote, TODO
             _attn_implementation='eager',
-            torch_dtype='auto')
+            torch_dtype='auto')  # Might be obsolete. Change to "dtype"?
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.name)
 
@@ -97,7 +79,6 @@ class GptOss20b(Template):
 
         input_ids = torch.tensor([prefill_ids], device=self.model.device)
 
-        # 3) Generate continuation tokens
         out = self.model.generate(
             input_ids=input_ids,
             max_new_tokens=max_tokens,
@@ -115,39 +96,7 @@ class GptOss20b(Template):
         final_msg = next(m for m in parsed if m.channel == "final")
         response = final_msg.content[0].text
 
-
-        # messages = [{
-        #     "role": "user",
-        #     "content": prompt}]
-        
-        # kwargs = {}
-        # if temperature == 0:
-        #     kwargs['do_sample'] = False
-        # else:
-        #     kwargs['temperature'] = temperature
-
-        # full_response = self.model(
-        #     messages,
-        #     max_new_tokens=max_tokens,
-        #     **kwargs)
-
-        # response = full_response[0]["generated_text"][-1]['content']
-
-        # # Remove thinking process from response. If it didn't
-        # # have enough tokens to finish thinking, the response
-        # # will come out half complete (with thinking included).
-        # if 'assistantfinal' in response:
-        #     response = response.split("assistantfinal", 1)[-1]
-
-        return response  # response
-
-
-@dataclass
-class GenerationConfig:
-    max_new_tokens: int = 256
-    temperature: float = 0.2
-    top_p: float = 0.95
-    repetition_penalty: float = 1.12
+        return response
 
 
 if __name__ == '__main__':
