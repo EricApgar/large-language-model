@@ -29,19 +29,16 @@ class Conversation:
     def __init__(self, id: str=None):
     
         self.id: str = id  # ? Make this generated on Conversation creation?
-        
+
         self.participants: list[str] = []
-        
+
         self.overall_prompt: str = None
         self.context: list[str] = []
         self.history: list[Response] = []
-        
+
         self.reasoning_level: ReasoningEffort = ReasoningEffort.LOW
 
-        self.harmony_convo: HarmonyConversation = None 
-        self.full_text: str = None
-
-        # self._generate_id():
+        self.harmony_convo: HarmonyConversation = None
 
 
     def set_reasoning_level(self, level: str):
@@ -65,7 +62,7 @@ class Conversation:
 
         self.overall_prompt = text
 
-        self._make_harmony_convo()
+        self._build_harmony()
 
         return
 
@@ -74,7 +71,7 @@ class Conversation:
 
         self.context.append(text)
 
-        self._make_harmony_convo()
+        self._build_harmony()
 
         return
 
@@ -90,35 +87,51 @@ class Conversation:
             self.participants.append(role)
 
         self.history.append(Response(role=role, text=text))
-        
-        self._make_harmony_convo()
+
+        self._build_harmony()
 
         return
     
 
-    def _make_full_text(self):
+    def to_dict(self):
         '''
-        Generate the full text of the conversation from pieces.
+        Generate a dictionary equivalent to the harmony conversation.
+        This let's you create an API friendly data object that can be
+        easily reconstituted into a conversation.
         '''
 
-        prompt = self.overall_prompt + '\n\n'
+        result = {}
 
-        if self.context:
-            context = 'Context Start:\n' + '\n'.join(self.context) + 'Context End.\n\n'
-        else:
-            context = ''
+        result['reasoning_level'] = self.reasoning_level
+        result['overall_prompt'] = self.overall_prompt  # str.
+        result['context'] = self.context  # List of str.
+        result['history'] = [(h.role, h.text) for h in self.history]
 
-        if self.history:
-            conversation = ''.join([f'[{i.name}]: {i.text}\n\n' for i in self.history])
-        else:
-            conversation = ''
+        return result
 
-        self.full_text = prompt + context + conversation
+
+    def from_dict(self, data: dict):
+
+        NEEDED_FIELDS = (
+            'reasoning_level',
+            'overall_prompt',
+            'context',
+            'history')
+        
+        if not set(NEEDED_FIELDS) == set(data.keys()):
+            raise ValueError('Input "data" is unaligned to needed keys!')
+
+        self.reasoning_level = data['reasoning_level']
+        self.overall_prompt = data['overall_prompt']
+        self.context = data['context']
+        self.history = [Response(role=h[0], text=h[1]) for h in data['history']]
+
+        self._build_harmony()
 
         return
 
 
-    def _make_harmony_convo(self) -> HarmonyConversation:
+    def _build_harmony(self) -> HarmonyConversation:
 
         # System Details about the Overall Conversation.
         system_msg = Message.from_role_and_content(
@@ -160,5 +173,6 @@ if __name__ == '__main__':
     c.add_context(text='You are married to your wife of 10 years, Gurdy. Your favorite hobby is fighting.')
 
     c.add_response(role='user', text='Hi, how are you?')
+    c.add_response(role='assistant', text='None of your business.')
 
     pass
