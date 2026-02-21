@@ -90,6 +90,7 @@ class Phi4MultimodalInstruct(Template):
         <|user|>\n<|image_1|>\n<|image_2|\n<|image_3|\n{prompt}<|end|>\n<|assistant|>\n
         '''
 
+        # TODO: Image list might not need chat template applied again.
         if images is not None:
             image_tags = ''.join([f'<|image_{i+1}|>\n' for i, _ in enumerate(images)])
             content_wrap = '<|user|\n>' + image_tags + f'{text}<|end|>\n<|assistant|>\n'
