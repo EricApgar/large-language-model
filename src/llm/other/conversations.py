@@ -7,15 +7,12 @@ from dataclasses import dataclass
 from typing import List, Literal
 
 from openai_harmony import (
-    HarmonyEncodingName,
-    load_harmony_encoding,
     Conversation as HarmonyConversation,
     Message,
     Role,
     SystemContent,
     DeveloperContent,
-    ReasoningEffort,
-    RenderConversationConfig)
+    ReasoningEffort)
 
 
 @dataclass
@@ -27,8 +24,6 @@ class Response:
 class Conversation:
 
     def __init__(self, id: str=None):
-    
-        self.id: str = id  # ? Make this generated on Conversation creation?
 
         self.participants: list[str] = []
 
@@ -68,6 +63,9 @@ class Conversation:
 
 
     def add_context(self, text: str):
+        '''
+        Add background context the system can reference.
+        '''
 
         self.context.append(text)
 
@@ -77,6 +75,10 @@ class Conversation:
 
 
     def add_response(self, role: str, text: str):
+        '''
+        Add either a user or assistant (currently only these
+        two supported) response to an ongoing conversation.
+        '''
 
         VALID_ROLES = ('user', 'assistant')
 
@@ -111,6 +113,9 @@ class Conversation:
 
 
     def from_dict(self, data: dict):
+        '''
+        Build an instance of Conversation() from a dictionary.
+        '''
 
         NEEDED_FIELDS = (
             'reasoning_level',
@@ -132,6 +137,9 @@ class Conversation:
 
 
     def _build_harmony(self) -> HarmonyConversation:
+        '''
+        Build a Harmony-Conversation object.
+        '''
 
         # System Details about the Overall Conversation.
         system_msg = Message.from_role_and_content(
