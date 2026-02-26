@@ -111,7 +111,7 @@ class Phi4MultimodalInstruct(Template):
             return_tensors='pt').to(self.device)
 
         return embedding
-    
+
 
     def _load_processor(self):
 
