@@ -3,9 +3,7 @@ As the conversation goes on, summarize sections and add them to context?
 Create long term (summarized from conversation pieces) and short term
 (original unaltered bits of conversation to add as context).
 '''
-import re
-
-from llm.other.conversations import Conversation
+from llm_conversation import Conversation
 from llm.models.gpt_oss_20b import GptOss20b
 
 
