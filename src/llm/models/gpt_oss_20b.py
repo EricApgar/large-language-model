@@ -53,6 +53,9 @@ class GptOss20b(Template):
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.name)
 
+        if self.tokenizer.pad_token_id is None or self.tokenizer.pad_token_id == self.tokenizer.eos_token_id:
+            self.tokenizer.pad_token_id = 0  # use a dedicated ID that isn't EOS
+
         return
 
 
@@ -83,16 +86,17 @@ class GptOss20b(Template):
         else:
             convo = prompt
 
-        convo = self._to_harmony(conversation=convo, reasoning_level=reasoning_level)
+        convo_harmony = self._to_harmony(conversation=convo, reasoning_level=reasoning_level)
 
         render_cfg = RenderConversationConfig(auto_drop_analysis=True)
         prefill_ids = encoding.render_conversation_for_completion(
-            convo,
+            convo_harmony,
             Role.ASSISTANT,
             config=render_cfg)
         stop_token_ids = encoding.stop_tokens_for_assistant_actions()
 
         input_ids = torch.tensor([prefill_ids], device=self.model.device)
+        attention_mask = torch.ones_like(input_ids)
 
         out = self.model.generate(
             input_ids=input_ids,
@@ -102,7 +106,9 @@ class GptOss20b(Template):
             top_p=top_p,
             repetition_penalty=repetition_penalty,
             eos_token_id=stop_token_ids,
-            pad_token_id=self.tokenizer.eos_token_id)
+            # pad_token_id=self.tokenizer.eos_token_id,
+            attention_mask=attention_mask,
+            pad_token_id=self.tokenizer.pad_token_id)
 
         completion_ids = out[0, input_ids.shape[-1]:].tolist()
 
@@ -112,12 +118,7 @@ class GptOss20b(Template):
         response = final_msg.content[0].text
 
         return response
-    
 
-    def _make_conversation(text: str):
-
-        return
-    
 
     @staticmethod
     def _to_harmony(conversation: Conversation, reasoning_level: str) -> HarmonyConversation:

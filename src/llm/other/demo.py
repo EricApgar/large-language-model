@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         c.add_response(role='user', text=user_response)
 
-        system_response = model.ask(prompt=c)
+        system_response = model.ask(prompt=c, max_tokens=1024)
 
         print(f'[Seamus]: {system_response}\n')
 
