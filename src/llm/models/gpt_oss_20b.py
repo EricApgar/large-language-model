@@ -63,6 +63,14 @@ class GptOss20b(Template):
         reasoning_level: str='low',
         repetition_penalty: float=1.12,
         top_p: float=0.95):
+        '''
+        Call an LLM with a prompt and generate a response.
+
+        This model works best when the input is formatted into an
+        openai-harmony conversation structure, so all inputs are converted
+        into a generic Conversation structure (if not already one) and then
+        converted into the harmony structure.
+        '''
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
