@@ -50,7 +50,7 @@ class Phi4MultimodalInstruct(Template):
             torch_dtype='auto')
         
         return
-    
+
 
     def ask(self,
         prompt: str,
@@ -90,11 +90,13 @@ class Phi4MultimodalInstruct(Template):
         <|user|>\n<|image_1|>\n<|image_2|\n<|image_3|\n{prompt}<|end|>\n<|assistant|>\n
         '''
 
+        # TODO: Image list might not need chat template applied again.
         if images is not None:
             image_tags = ''.join([f'<|image_{i+1}|>\n' for i, _ in enumerate(images)])
             content_wrap = '<|user|\n>' + image_tags + f'{text}<|end|>\n<|assistant|>\n'
         else:
-            content_wrap = f'<|user|>\n{text}<|end|>\n<|assistant|>\n'
+            # content_wrap = f'<|user|>\n{text}<|end|>\n<|assistant|>\n'
+            content_wrap = text
 
         messages = [{'role': 'user', 'content': content_wrap}]
 
@@ -102,14 +104,14 @@ class Phi4MultimodalInstruct(Template):
             messages,
             tokenize=False,
             add_generation_prompt=True)
-        
+
         embedding = self.processor(
             images=images,
             text=structured_prompt,
             return_tensors='pt').to(self.device)
 
         return embedding
-    
+
 
     def _load_processor(self):
 
@@ -162,9 +164,9 @@ class Phi4MultimodalInstruct(Template):
 
 if __name__ == '__main__':
 
-    # model = Phi4MultimodalInstruct()
-    # model.load(location=<path to model cache>)
-    # response = model.ask(prompt='What is the capital of France?')
-    # print(response)
+    model = Phi4MultimodalInstruct()
+    model.load(location=r'/home/eric/Repos/model_cache')  # <path to model cache>
+    response = model.ask(prompt='Name a primary color.')
+    print(response)
 
     pass

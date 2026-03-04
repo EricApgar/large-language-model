@@ -14,6 +14,7 @@ dependencies = [
     "torch",
     "torchvision",
     "sentence-transformers>=5.2.2",
+    "llm-conversation",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +22,7 @@ openai = [
     "accelerate>=1.12.0",
     "triton>=3.5.0",
     "kernels>=0.11.1",
+    "openai-harmony>=0.0.8",
 ]
 microsoft = [
     "peft>=0.18.1",
@@ -31,6 +33,7 @@ all = [
     "accelerate>=1.12.0",
     "triton>=3.5.0",
     "kernels>=0.11.1",
+    "openai-harmony>=0.0.8",
     "peft>=0.18.1",
     "backoff>=2.2.1",
 ]
@@ -44,6 +47,7 @@ explicit = true  # Only used for torch packages explicitly mapped below.
 [tool.uv.sources]
 torch = { index = "pytorch-cu130" }
 torchvision = { index = "pytorch-cu130" }
+llm-conversation = { git = "https://github.com/EricApgar/llm-conversation", rev = "v0.2.0" }
 
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
