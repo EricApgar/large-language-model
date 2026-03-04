@@ -61,7 +61,7 @@ class GptOss20b(Template):
 
     def ask(self,
         prompt: str | Conversation,
-        max_tokens: int=256,
+        max_tokens: int=1024,
         temperature: float=0.5,
         reasoning_level: str='low',
         repetition_penalty: float=1.12,
@@ -104,20 +104,33 @@ class GptOss20b(Template):
             do_sample=True,
             temperature=temperature,
             top_p=top_p,
+            # min_p=min_p,
             repetition_penalty=repetition_penalty,
             eos_token_id=stop_token_ids,
             # pad_token_id=self.tokenizer.eos_token_id,
             attention_mask=attention_mask,
             pad_token_id=self.tokenizer.pad_token_id)
 
-        completion_ids = out[0, input_ids.shape[-1]:].tolist()
+        generated_tokens = out[0, input_ids.shape[-1]:].tolist()
 
-        parsed = encoding.parse_messages_from_completion_tokens(completion_ids, role=Role.ASSISTANT)
+        # NOTE: Translate tokens directly to output (Debugging Only)
+        text_tokens = self.tokenizer.batch_decode(
+            generated_tokens,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False)
 
-        final_msg = next(m for m in parsed if m.channel == "final")
-        response = final_msg.content[0].text
+        # I can patch the harmony token problem by assuming that the message is in the generated tokens, and just
+        # wiping out everything up until the first occurrence of ['', 'analysis', ].
+        generated_tokens = generated_tokens[get_good_token_start(token_list=text_tokens):]
 
-        return response
+        # Transform tokens into the text equivalent (contains model reasoning and thinking).
+        full_response = encoding.parse_messages_from_completion_tokens(generated_tokens, role=Role.ASSISTANT)
+
+        # Extract the actual response from the full set of generated text.
+        final_response = next(m for m in full_response if m.channel == "final")
+        text_response = final_response.content[0].text
+
+        return text_response
 
 
     @staticmethod
@@ -163,6 +176,23 @@ class GptOss20b(Template):
         harmony_convo = HarmonyConversation.from_messages(msgs)
 
         return harmony_convo
+
+
+def get_good_token_start(token_list: list[str]):
+    '''
+    This is a patch for handling bad generated tokens which break
+    the openai-harmony prompt formatter.
+
+    It finds the start of rational thought in the generated output, skipping
+    over the nonsense content that's generated.
+    '''
+    for i in range(len(token_list) - 1):
+        if token_list[i] == "" and token_list[i + 1] == "analysis":
+            return i
+
+    raise ValueError("Could not find ['', 'analysis'] in the list")
+
+    return
 
 
 if __name__ == '__main__':
