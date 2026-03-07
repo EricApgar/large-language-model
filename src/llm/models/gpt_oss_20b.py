@@ -178,7 +178,7 @@ class GptOss20b(Template):
         return harmony_convo
 
 
-def get_good_token_start(token_list: list[str]):
+def get_good_token_start(token_list: list[str]) -> int:
     '''
     This is a patch for handling bad generated tokens which break
     the openai-harmony prompt formatter.
@@ -186,13 +186,16 @@ def get_good_token_start(token_list: list[str]):
     It finds the start of rational thought in the generated output, skipping
     over the nonsense content that's generated.
     '''
+    i_start = None
+
     for i in range(len(token_list) - 1):
         if token_list[i] == "" and token_list[i + 1] == "analysis":
-            return i
+            i_start = i
 
-    raise ValueError("Could not find ['', 'analysis'] in the list")
+    if not i_start:
+        raise ValueError("Could not find ['', 'analysis'] in the list")
 
-    return
+    return i_start
 
 
 if __name__ == '__main__':
