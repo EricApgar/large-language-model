@@ -70,10 +70,10 @@ class Phi4MultimodalInstruct(Template):
         prompt: str | Conversation,
         images: list[PillowImage.Image]=None,
         max_tokens: int=1024,
-        temperature: float=0.5,
-        reasoning_level: str='low',
-        repetition_penalty: float=1.12,
-        top_p: float=0.95) -> str:
+        # temperature: float=0.5,
+        # reasoning_level: str='low',
+        # top_p: float=0.95,
+        repetition_penalty: float=1.12) -> str:
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
