@@ -77,10 +77,10 @@ class GptOss20b(Template):
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
-        
+
         encoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
 
-        if isinstance(prompt, str):  # Create a structured conversation from 
+        if isinstance(prompt, str):  # Create a structured conversation from input.
             convo = Conversation()
             convo.add_response(role='user', text=prompt)
         else:
@@ -98,35 +98,36 @@ class GptOss20b(Template):
         input_ids = torch.tensor([prefill_ids], device=self.model.device)
         attention_mask = torch.ones_like(input_ids)
 
-        out = self.model.generate(
+        # Generate new tokens from the LLM.
+        generated_tokens = self.model.generate(
             input_ids=input_ids,
             max_new_tokens=max_tokens,
             do_sample=True,
             temperature=temperature,
-            top_p=top_p,
-            # min_p=min_p,
+            top_p=top_p,  # NOTE: Debatable usefulness.
             repetition_penalty=repetition_penalty,
             eos_token_id=stop_token_ids,
-            # pad_token_id=self.tokenizer.eos_token_id,
-            attention_mask=attention_mask,
-            pad_token_id=self.tokenizer.pad_token_id)
+            attention_mask=attention_mask,  # NOTE: Debatable usefulness.
+            pad_token_id=self.tokenizer.pad_token_id)  # NOTE: Debatable usefulness. self.tokenizer.eos_token_id
 
-        generated_tokens = out[0, input_ids.shape[-1]:].tolist()
+        # Shape the generated tokens into final form.
+        generated_tokens = generated_tokens[0, input_ids.shape[-1]:].tolist()
 
-        # NOTE: Translate tokens directly to output (Debugging Only)
+        # Translate tokens (which are numbers) directly to output. Basically a look up table.
+        # This is an tangent we take to check if the output is mangled and needs to be adjusted.
         text_tokens = self.tokenizer.batch_decode(
             generated_tokens,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=False)
 
-        # I can patch the harmony token problem by assuming that the message is in the generated tokens, and just
-        # wiping out everything up until the first occurrence of ['', 'analysis', ].
+        # I can patch the mangled harmony token problem by assuming that the message is in the generated tokens, 
+        # and just wiping out everything up until the first occurrence of [..., '', 'analysis', ...].
         generated_tokens = generated_tokens[get_good_token_start(token_list=text_tokens):]
 
-        # Transform tokens into the text equivalent (contains model reasoning and thinking).
+        # Transform tokens into the text equivalent (will contain model reasoning and thinking).
         full_response = encoding.parse_messages_from_completion_tokens(generated_tokens, role=Role.ASSISTANT)
 
-        # Extract the actual response from the full set of generated text.
+        # Extract the actual response (sans reasoning) from the full set of generated text.
         final_response = next(m for m in full_response if m.channel == "final")
         text_response = final_response.content[0].text
 

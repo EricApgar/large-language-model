@@ -24,7 +24,8 @@ class Template(ABC):
         location: str,
         remote: bool=False,
         commit: str=None,
-        quantization: str=None):
+        quantization: str=None,
+        device: str=None):
         '''
         Load in the LLM with specific settings.
 
@@ -35,6 +36,7 @@ class Template(ABC):
             models are loaded from.
         commit: specific git commit for a model.
         quantization: work in progress. Currently unused.
+        device: which device to store the model on (typically a GPU).
         '''
 
         pass
@@ -46,7 +48,8 @@ class Template(ABC):
         max_tokens: int=256,
         temperature: float=0.0) -> str:
         '''
-        Ask the LLM a query.
+        Ask the LLM a query. Most arguments are common, with Image input being the
+        exception for multimodal LLMs.
 
         prompt: text question or statement to make.
         max_tokens: maximum number of generated tokens. If an answer requires
