@@ -192,9 +192,10 @@ def get_good_token_start(token_list: list[str]) -> int:
     for i in range(len(token_list) - 1):
         if token_list[i] == "" and token_list[i + 1] == "analysis":
             i_start = i
+            break
 
-    if not i_start:
-        raise ValueError("Could not find ['', 'analysis'] in the list")
+    if i_start is None:
+        raise ValueError(f'Mangled LLM output. Could not find expected start tokens ["", "analysis"] in generated tokens: {token_list}')
 
     return i_start
 
