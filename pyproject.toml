@@ -1,6 +1,6 @@
 [project]
 name = "llm"  # The pip install <name>.
-version = "0.3.0"
+version = "0.4.0"
 description = "Library for easy use of LLMs."
 readme = "README.md"
 authors = [
