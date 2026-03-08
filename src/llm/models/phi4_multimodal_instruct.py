@@ -94,7 +94,6 @@ class Phi4MultimodalInstruct(Template):
         generated_tokens = self.model.generate(
             **embedding,
             eos_token_id=self.processor.tokenizer.eos_token_id,
-            temperature=temperature,
             repetition_penalty=repetition_penalty,
             **generation_args)
 
@@ -202,7 +201,7 @@ if __name__ == '__main__':
     model = Phi4MultimodalInstruct()
     model.load(location=r'/home/eric/Repos/model_cache')  # <path to model cache>
 
-    response = model.ask(prompt='Name a primary color. Answer as succinctly as possible.', max_tokens=256)
+    response = model.ask(prompt='Name a primary color. Be brief.', max_tokens=256)
     print(f'{response}\n')
 
     convo = Conversation()
