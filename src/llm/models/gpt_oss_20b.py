@@ -49,7 +49,7 @@ class GptOss20b(Template):
             device_map=self.device,
             trust_remote_code=True,  # self.remote, TODO
             _attn_implementation='eager',
-            torch_dtype='auto')  # Might be obsolete. Change to "dtype"?
+            dtype='auto')  # Might be obsolete. Change to "dtype"?
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.name)
 

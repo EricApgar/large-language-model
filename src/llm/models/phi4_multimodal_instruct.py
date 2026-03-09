@@ -84,7 +84,7 @@ class Phi4MultimodalInstruct(Template):
         else:
             convo = prompt
 
-        embedding = self.structure_inputs(convo=convo, images=images)
+        embedding = self._structure_inputs(convo=convo, images=images)
 
         generation_args = {
             'max_new_tokens': max_tokens,
@@ -109,7 +109,7 @@ class Phi4MultimodalInstruct(Template):
         return response
     
 
-    def structure_inputs(self, convo: Conversation, images: list=None) -> dict:
+    def _structure_inputs(self, convo: Conversation, images: list=None) -> dict:
         '''
         Structure the input convo and images into the expected format
         to get a good clean LLM response. Embedd it and prepare for LLM
