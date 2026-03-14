@@ -61,10 +61,10 @@ class GptOss20b(Template):
 
     def ask(self,
         prompt: str | Conversation,
-        max_tokens: int=1024,
-        temperature: float=0.5,
+        max_tokens: int=256,
+        temperature: float=1.0,
         reasoning_level: str='low',
-        repetition_penalty: float=1.12,
+        repetition_penalty: float=1.15,
         top_p: float=0.95):
         '''
         Call an LLM with a prompt and generate a response.
