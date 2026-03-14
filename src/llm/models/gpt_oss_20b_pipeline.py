@@ -1,3 +1,5 @@
+import os
+
 from transformers import pipeline
 
 from llm.models.template import Template
@@ -20,6 +22,9 @@ class GptOss20bPipeline(Template):
         quantization: str=None,
         device: str=None):
 
+        if (not remote) and (not os.path.isdir(location)):
+            raise ValueError(f'Nonexistant location ({location}) - fix or set remote=True.')
+
         self.location = location
         self.remote = remote
         self.commit = commit
@@ -35,6 +40,10 @@ class GptOss20bPipeline(Template):
         #     # model=model_path,
         #     dtype='auto',
         #     device=device)
+
+        model_kwargs = {
+            'cache_dir': self.location,
+            'local_files_only': not self.remote}
         
         self.model = pipeline(
             task='text-generation',
@@ -43,66 +52,76 @@ class GptOss20bPipeline(Template):
             device_map=self.device,
             token=self.hf_token,
             revision=self.commit,
-            trust_remote_code=self.remote)
+            # trust_remote_code=self.remote,
+            model_kwargs=model_kwargs)
 
         return
     
 
     def ask(self,
         prompt: str | Conversation,
-        max_tokens: int=1024,
-        temperature: float=0.5,
-        reasoning_level: str='low'):
+        max_tokens: int=512,
+        temperature: float=0.9,
+        reasoning_level: str=None):
 
-        if isinstance(prompt, str):  # Create a structured conversation from input.
-            convo = Conversation()
-            convo.add_response(role='user', text=prompt)
+        formatted_messages = self._format_prompt(prompt=prompt, reasoning_level=reasoning_level)
+
+        kwargs = {}
+        if temperature == 0:
+            kwargs['do_sample'] = False
         else:
-            convo = prompt
+            kwargs['temperature'] = temperature
 
-        messages = self._structure_prompt(
-            convo=convo,
-            reasoning_level=reasoning_level)
-
-        output = self.model(
-            messages,
+        model_output = self.model(
+            formatted_messages,
             max_new_tokens=max_tokens,
-            temperature=temperature,
-            do_sample=temperature != 1.0)
+            **kwargs)
+        
+        full_text_response = model_output[0]['generated_text'][-1]['content']
 
-        text = self._parse_final_output(output=output)
+        if 'assistantfinal' in full_text_response:
+            text = full_text_response.split("assistantfinal", 1)[1].strip()
+        else:
+            raise ValueError(f'Mangled LLM output. Could not find expected end marker "assistantfinal" in generated text: {generated_text}')
 
         return text
 
 
-    def _structure_prompt(self, convo: Conversation, reasoning_level: str='low') -> list[dict]:
+    @staticmethod
+    def _format_prompt(self, prompt: str | Conversation, reasoning_level: str=None) -> list[dict]:
         '''
         Structure the input convo and images into the expected format
         to get a good clean LLM response. Embedd it and prepare for LLM
         token generation.
         '''
 
-        messages = []
+        if isinstance(prompt, str):
+            convo = Conversation()
+            convo.add_response(role='user', text=prompt)
+        else:
+            convo = prompt
 
-        system_prompt = f'Reasoning: {reasoning_level}. {convo.overall_prompt} {' '.join(convo.context)}' 
-        messages.append({'role': 'system', 'content': system_prompt})
+        system_pieces = []
+        formatted_messages = []
 
-        for i in convo.history:
-            messages.append({'role': i.role, 'content': i.text})
+        if reasoning_level:
+            system_pieces.append(f'Reasoning level: {reasoning_level}.')
 
-        return messages
+        if convo.overall_prompt:
+            system_pieces.append(convo.overall_prompt)
 
+        if convo.context:
+            for context in convo.context:
+                system_pieces.append(context)
 
-    def _parse_final_output(self, output: list[dict]) -> str:
+        if system_pieces:  # Merge background context pieces.
+            formatted_messages.append({'role': 'system', 'content': ' '.join(system_pieces)})
 
-        generated_text = output[0]["generated_text"][-1]['content']
+        if convo.history:
+            for response in convo.history:
+                formatted_messages.append({'role': response.role, 'content': response.text})
 
-        if 'assistantfinal' not in generated_text:
-            raise ValueError(f'Mangled LLM output. Could not find expected end marker "assistantfinal" in generated text: {generated_text}')
-
-        text = generated_text.split("assistantfinal", 1)[1].strip()
-
-        return text
+        return formatted_messages
 
 
 if __name__ == '__main__':
