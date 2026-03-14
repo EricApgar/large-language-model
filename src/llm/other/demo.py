@@ -9,6 +9,7 @@ from llm.models.gpt_oss_20b import GptOss20b
 
 if __name__ == '__main__':
 
+    # model = GptOss20b()
     model = GptOss20b()
     model.load(location=r'/home/eric/Repos/model_cache')
 
