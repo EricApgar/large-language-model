@@ -1,8 +1,13 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from transformers import AutoProcessor, AutoModelForCausalLM
 
 from llm.models.template import Template
+from llm_conversation import Conversation
 
-# from PIL import image as PillowImage
+if TYPE_CHECKING:
+    from PIL import Image as PillowImage
 
 
 class Phi4MultimodalInstruct(Template):
@@ -21,6 +26,14 @@ class Phi4MultimodalInstruct(Template):
         commit: str='0cb22ab20b10ac01c49ecd8b7138dcd98bc00548',
         quantization: str=None,
         device: str=None):
+        '''
+        The commit is locked to this because this is the version of Phi4 with patches
+        needed to run. There's a whole mess regarding Phi-4 getting out of date with
+        transformers and breaking, and no one updating the HF Phi-4. See the discussions
+        (https://huggingface.co/microsoft/Phi-4-multimodal-instruct/discussions) for details.
+
+        Just know that it's huge hassle to try to get Phi4 working as the transformers lib updates.
+        '''
 
         self.location = location
         self.remote = remote
@@ -30,6 +43,7 @@ class Phi4MultimodalInstruct(Template):
         self._set_device(device=device)
         self._patch_dynamic_cache()
 
+        # TODO: Turn on quantization at some point.
         # quantization_config = BitsAndBytesConfig(
         #     load_in_4bit=True,
         #     bnb_4bit_compute_dtype=torch.float16)
@@ -53,52 +67,69 @@ class Phi4MultimodalInstruct(Template):
 
 
     def ask(self,
-        prompt: str,
-        images: list=None,  # list[PillowImage.Image]
-        max_tokens: int=256,
-        temperature: float=0.1):
+        prompt: str | Conversation,
+        images: list[PillowImage.Image]=None,
+        max_tokens: int=1024,
+        # temperature: float=0.5,
+        # reasoning_level: str='low',
+        # top_p: float=0.95,
+        repetition_penalty: float=1.12) -> str:
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
+        
+        if isinstance(prompt, str):  # Create a structured conversation from input.
+            convo = Conversation()
+            convo.add_response(role='user', text=prompt)
+        else:
+            convo = prompt
 
-        embedding = self.embed(text=prompt, images=images)
+        embedding = self._structure_inputs(convo=convo, images=images)
 
         generation_args = {
             'max_new_tokens': max_tokens,
-            # temperature: 0.0,
             'do_sample': False}
-        
-        generate_ids = self.model.generate(
+
+        # Generate new tokens from the input via an LLM.
+        generated_tokens = self.model.generate(
             **embedding,
             eos_token_id=self.processor.tokenizer.eos_token_id,
+            repetition_penalty=repetition_penalty,
             **generation_args)
-        
-        # Decode the output (un-embed the output to convert to text).
-        generate_ids = generate_ids[:, embedding['input_ids'].shape[1]:]
 
+        # Extract the explicit response tokens (sans thinking and original question).
+        response_tokens = generated_tokens[:, embedding['input_ids'].shape[1]:]
+
+        # Translate the tokens to text (essentially a look up table).
         response = self.processor.batch_decode(
-            generate_ids,
+            response_tokens,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=False)[0]
-        
+
         return response
     
 
-    def embed(self, text: str=None, images: list=None) -> dict:
+    def _structure_inputs(self, convo: Conversation, images: list=None) -> dict:
         '''
-        Background:
-        <|user|>\n<|image_1|>\n<|image_2|\n<|image_3|\n{prompt}<|end|>\n<|assistant|>\n
+        Structure the input convo and images into the expected format
+        to get a good clean LLM response. Embedd it and prepare for LLM
+        token generation.
         '''
 
-        # TODO: Image list might not need chat template applied again.
-        if images is not None:
-            image_tags = ''.join([f'<|image_{i+1}|>\n' for i, _ in enumerate(images)])
-            content_wrap = '<|user|\n>' + image_tags + f'{text}<|end|>\n<|assistant|>\n'
-        else:
-            # content_wrap = f'<|user|>\n{text}<|end|>\n<|assistant|>\n'
-            content_wrap = text
+        if not convo.overall_prompt:
+            convo.set_overall_prompt(text='')
 
-        messages = [{'role': 'user', 'content': content_wrap}]
+        system_prompt = convo.overall_prompt + ' '.join(convo.context)
+        messages = [{
+            'role': 'system',
+            'content': system_prompt}] + [{
+                'role': i.role,
+                'content': i.text} for i in convo.history]
+
+        if images:  # Modify last item in convo to carry image tags.
+            image_tags = ''.join([f'<|image_{i+1}|>' for i, _ in enumerate(images)])
+            last_role = messages[-1]['role']
+            messages[-1] = {'role': last_role, 'content': image_tags + messages[-1]['content']}
 
         structured_prompt = self.processor.tokenizer.apply_chat_template(
             messages,
@@ -113,17 +144,20 @@ class Phi4MultimodalInstruct(Template):
         return embedding
 
 
-    def _load_processor(self):
+    def _load_processor(self, num_images: int=1):
 
-        # TODO: For best performance, supposed to use num_crops=4 for multi
-        # frame and 16 for single frame.
+        if num_images == 1:
+            num_crops = 16
+        else:
+            num_crops = 4
+
         self.processor = AutoProcessor.from_pretrained(
             pretrained_model_name_or_path=self.name,
             trust_remote_code=True,  # self.remote,
-            num_crops=4)
-        
+            num_crops=num_crops)
+
         return
-    
+
 
     def _patch_dynamic_cache(self):
         '''
@@ -165,8 +199,22 @@ class Phi4MultimodalInstruct(Template):
 if __name__ == '__main__':
 
     model = Phi4MultimodalInstruct()
-    model.load(location=r'/home/eric/Repos/model_cache')  # <path to model cache>
-    response = model.ask(prompt='Name a primary color.')
-    print(response)
+    model.load(location=r'/home/eric/Repos/model_cache')  # NOTE: set <path to model cache>.
+
+    response = model.ask(prompt='Name a primary color. Be brief.', max_tokens=256)
+    print(f'{response}\n')
+
+    convo = Conversation()
+    convo.set_overall_prompt(text='You are a helpful assistant.')
+    convo.add_context(text='Your favorite color is red.')
+    convo.add_context(text='Your favorite shape is the hexagon.')
+    convo.add_response(role='user', text='What is your favorite color-shape combination?')
+    response = model.ask(prompt=convo, max_tokens=256)
+    print(f'{response}\n')
+
+    from PIL import Image as PillowImage
+    image = PillowImage.open(r'/home/eric/Desktop/monkey.png')  # NOTE: Point to existing image.
+    response = model.ask(prompt='Describe the image.', images=[image], max_tokens=256)
+    print(f'{response}\n')
 
     pass

@@ -9,6 +9,7 @@ from llm.models.gpt_oss_20b import GptOss20b
 
 if __name__ == '__main__':
 
+    # model = GptOss20b()
     model = GptOss20b()
     model.load(location=r'/home/eric/Repos/model_cache')
 
@@ -32,7 +33,7 @@ if __name__ == '__main__':
 
         c.add_response(role='user', text=user_response)
 
-        system_response = model.ask(prompt=c, max_tokens=1024)
+        system_response = model.ask(prompt=c)
 
         print(f'[Seamus]: {system_response}\n')
 
