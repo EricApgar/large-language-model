@@ -15,6 +15,7 @@ dependencies = [
     "torchvision",
     "sentence-transformers>=5.2.2",
     "llm-conversation",
+    "pytest>=8.0",
 ]
 
 [project.optional-dependencies]
@@ -48,6 +49,9 @@ explicit = true  # Only used for torch packages explicitly mapped below.
 torch = { index = "pytorch-cu130" }
 torchvision = { index = "pytorch-cu130" }
 llm-conversation = { git = "https://github.com/EricApgar/llm-conversation", rev = "v0.2.0" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
