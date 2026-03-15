@@ -47,7 +47,7 @@ uv sync
 
 ...with optional libraries:
 ```
-uv sync --extra <tag-1> <tag-2>
+uv sync --extra <tag-1> --extra <tag-2>
 ```
 
 ### ...with pip:
