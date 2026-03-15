@@ -10,6 +10,8 @@ in your shell:
     LLM_MODEL_CACHE=/home/yourname/Repos/model_cache pytest
 
 Tests are skipped automatically if LLM_MODEL_CACHE is not set.
+
+Make sure the virtual environment is active.
 """
 
 import os
