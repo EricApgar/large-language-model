@@ -1,6 +1,6 @@
 [project]
 name = "llm"  # The pip install <name>.
-version = "0.4.0"
+version = "0.4.1"
 description = "Library for easy use of LLMs."
 readme = "README.md"
 authors = [
@@ -48,7 +48,7 @@ explicit = true  # Only used for torch packages explicitly mapped below.
 [tool.uv.sources]
 torch = { index = "pytorch-cu130" }
 torchvision = { index = "pytorch-cu130" }
-llm-conversation = { git = "https://github.com/EricApgar/llm-conversation", rev = "v0.2.0" }
+llm-conversation = { git = "https://github.com/EricApgar/llm-conversation" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

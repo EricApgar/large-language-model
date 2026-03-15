@@ -6,7 +6,7 @@ weights. Sync the environment first, then pass LLM_MODEL_CACHE inline when
 invoking pytest so it only exists for that one command and does not persist
 in your shell:
 
-    uv sync --extra dev --extra openai
+    uv sync --extra openai
     LLM_MODEL_CACHE=/home/yourname/Repos/model_cache pytest
 
 Tests are skipped automatically if LLM_MODEL_CACHE is not set.
