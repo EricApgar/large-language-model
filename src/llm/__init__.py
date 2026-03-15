@@ -1,27 +1,10 @@
-'''
-Desired interface:
-
-import llm
-
-model = llm.model(
-    name='openai/gpt-oss-20b',
-    hf_token=<hf token>)
-model.load(
-    location=<path to save dir>,
-    remote=true, 
-    commit=<git commit>,
-    quantization='4-bit')
-response = model.ask(prompt='Tell me a joke.')
-'''
-
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 
 __all__ = (
     "model",
-    "embedding",
-    'Conversation')
+    "embedding")
 
 
 if TYPE_CHECKING:
@@ -40,11 +23,6 @@ def __getattr__(name: str) -> Any:
         from .models.embed import EmbeddingModel
         globals()[name] = EmbeddingModel
         return EmbeddingModel
-    
-    if name == 'Conversation':
-        from .other.conversations import Conversation
-        globals()[name] = Conversation
-        return Conversation
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

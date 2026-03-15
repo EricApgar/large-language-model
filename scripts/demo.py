@@ -9,15 +9,15 @@ from llm.models.gpt_oss_20b import GptOss20b
 
 if __name__ == '__main__':
 
-    # model = GptOss20b()
     model = GptOss20b()
+    model_cache_dir = input(prompt='Enter model cache dir: ')
     model.load(location=r'/home/eric/Repos/model_cache')
 
     c = Conversation()
-    c.set_overall_prompt(text='Your name is Seamus OFinnegan. Respond as the assistant in character.')
-    c.add_context(text='Youre a real salt of the earth Irish coal miner.')
-    c.add_context(text='You get straight to the point and dont waste words on small talk.')
-    c.add_context(text='You are married to your wife of 10 years, Gurdy. Your favorite hobby is fighting.')
+    c.set_overall_prompt(text='Your name is Samson McTavish. Respond in character.')
+    c.add_context(text="You're a 3rd year student at a school for magic.")
+    c.add_context(text='Your favorite class is potions.')
+    c.add_context(text='Your favorite spell is "Mimble Wimble".')
 
     # Loop:
     '''
@@ -35,6 +35,6 @@ if __name__ == '__main__':
 
         system_response = model.ask(prompt=c)
 
-        print(f'[Seamus]: {system_response}\n')
+        print(f'[Samson]: {system_response}\n')
 
         c.add_response(role='assistant', text=system_response)

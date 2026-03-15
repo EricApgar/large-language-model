@@ -1,14 +1,21 @@
+import os
+
 from sentence_transformers import util, SentenceTransformer
 import numpy as np
 import torch
 
+from llm.models.selection import SUPPORTED_EMBEDDING_MODELS
+
 
 class EmbeddingModel:
 
-    def __init__(self, hf_token: str|None=None):
+    def __init__(self, name: str='all-mpnet-base-v2', hf_token: str=None):
 
+        if name not in SUPPORTED_EMBEDDING_MODELS:
+            raise ValueError(f'Invalid embedding model "{self.name}". Supported: {SUPPORTED_EMBEDDING_MODELS}.')
+
+        self.name: str = name
         self.hf_token: str = hf_token
-        self.name: str = None
 
         self.location: str = None
         self.remote: bool = False
@@ -20,23 +27,19 @@ class EmbeddingModel:
 
     def load(self,
         location: str,
-        name: str='all-mpnet-base-v2',
         remote: bool=False,
         commit: str=None) -> None:
 
-        VALID_MODELS = ['all-mpnet-base-v2', 'all-MiniLM-L6-v2']
+        if (not remote) and (not os.path.isdir(location)):
+            raise ValueError(f'Nonexistant location ({location}) - fix or set remote=True.')
 
-        if name not in VALID_MODELS:
-            raise ValueError(f'Invalid embedding model "{name}". Supported: {VALID_MODELS}')
-        
         self.location = location
-        self.name = name
         self.remote = remote
         self.commit = commit
 
         self.model = SentenceTransformer(
             cache_folder=location,
-            model_name_or_path=name,
+            model_name_or_path=self.name,
             local_files_only=not self.remote,
             trust_remote_code=self.remote,
             token=self.hf_token)
@@ -72,9 +75,18 @@ class EmbeddingModel:
             similarity = self._torch_dot_similarity(v1=v1, v2=v2)
 
         return similarity
-    
+
+
     @staticmethod
     def _dot_similarity(v1: np.array, v2: np.array) -> float:
+
+        result = torch.dot(v1, v2)
+
+        return result
+
+
+    @staticmethod
+    def _cosine_similarity(v1: np.array, v2: np.array) -> float:
 
         dot_product = torch.dot(v1, v2)
 
@@ -95,12 +107,13 @@ class EmbeddingModel:
     
 
 if __name__ == '__main__':
-    model = EmbeddingModel()
-    model.load(location=r'<path to model cache>')
-    e1 = model.embed(text='What shape is best?')
-    e2 = model.embed(text='Hexagons are the bestagons.')
-    similarity = model.get_similarity(v1=e1, v2=e2)
 
-    print(similarity)
+    # model = EmbeddingModel()
+    # model.load(location=<path to model cache>)  # NOTE: set <path to model cache>.
+    # e1 = model.embed(text='What shape is best?')
+    # e2 = model.embed(text='Hexagons are the bestagons.')
+    # similarity = model.get_similarity(v1=e1, v2=e2)
+
+    # print(similarity)
 
     pass

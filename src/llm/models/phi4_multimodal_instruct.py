@@ -198,23 +198,23 @@ class Phi4MultimodalInstruct(Template):
 
 if __name__ == '__main__':
 
-    model = Phi4MultimodalInstruct()
-    model.load(location=r'/home/eric/Repos/model_cache')  # NOTE: set <path to model cache>.
+    # model = Phi4MultimodalInstruct()
+    # model.load(location=<path to model cache>)  # NOTE: set <path to model cache>.
 
-    response = model.ask(prompt='Name a primary color. Be brief.', max_tokens=256)
-    print(f'{response}\n')
+    # response = model.ask(prompt='Name a primary color. Be brief.', max_tokens=256)
+    # print(f'{response}\n')
 
-    convo = Conversation()
-    convo.set_overall_prompt(text='You are a helpful assistant.')
-    convo.add_context(text='Your favorite color is red.')
-    convo.add_context(text='Your favorite shape is the hexagon.')
-    convo.add_response(role='user', text='What is your favorite color-shape combination?')
-    response = model.ask(prompt=convo, max_tokens=256)
-    print(f'{response}\n')
+    # convo = Conversation()
+    # convo.set_overall_prompt(text='You are a helpful assistant.')
+    # convo.add_context(text='Your favorite color is red.')
+    # convo.add_context(text='Your favorite shape is the hexagon.')
+    # convo.add_response(role='user', text='What is your favorite color-shape combination?')
+    # response = model.ask(prompt=convo, max_tokens=256)
+    # print(f'{response}\n')
 
-    from PIL import Image as PillowImage
-    image = PillowImage.open(r'/home/eric/Desktop/monkey.png')  # NOTE: Point to existing image.
-    response = model.ask(prompt='Describe the image.', images=[image], max_tokens=256)
-    print(f'{response}\n')
+    # from PIL import Image as PillowImage
+    # image = PillowImage.open(r'/home/eric/Desktop/monkey.png')  # NOTE: Point to existing image.
+    # response = model.ask(prompt='Describe the image.', images=[image], max_tokens=256)
+    # print(f'{response}\n')
 
     pass

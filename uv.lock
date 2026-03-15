@@ -192,7 +192,7 @@ wheels = [
 
 [[package]]
 name = "llm"
-version = "0.4.0"
+version = "0.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "llm-conversation" },
@@ -232,7 +232,7 @@ requires-dist = [
     { name = "backoff", marker = "extra == 'microsoft'", specifier = ">=2.2.1" },
     { name = "kernels", marker = "extra == 'all'", specifier = ">=0.11.1" },
     { name = "kernels", marker = "extra == 'openai'", specifier = ">=0.11.1" },
-    { name = "llm-conversation", git = "https://github.com/EricApgar/llm-conversation?rev=v0.2.0" },
+    { name = "llm-conversation", git = "https://github.com/EricApgar/llm-conversation" },
     { name = "openai-harmony", marker = "extra == 'all'", specifier = ">=0.0.8" },
     { name = "openai-harmony", marker = "extra == 'openai'", specifier = ">=0.0.8" },
     { name = "peft", marker = "extra == 'all'", specifier = ">=0.18.1" },
@@ -250,7 +250,7 @@ provides-extras = ["openai", "microsoft", "all"]
 [[package]]
 name = "llm-conversation"
 version = "0.2.0"
-source = { git = "https://github.com/EricApgar/llm-conversation?rev=v0.2.0#ce9d59af41f4a01839bc01a0c8428d0f1775d8c2" }
+source = { git = "https://github.com/EricApgar/llm-conversation#ce9d59af41f4a01839bc01a0c8428d0f1775d8c2" }
 
 [[package]]
 name = "markupsafe"
