@@ -109,7 +109,7 @@ class EmbeddingModel:
 if __name__ == '__main__':
 
     # model = EmbeddingModel()
-    # model.load(location=r'<path to model cache>')
+    # model.load(location=<path to model cache>)  # NOTE: set <path to model cache>.
     # e1 = model.embed(text='What shape is best?')
     # e2 = model.embed(text='Hexagons are the bestagons.')
     # similarity = model.get_similarity(v1=e1, v2=e2)

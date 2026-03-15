@@ -117,10 +117,10 @@ class GptOss20b(Template):
 
 if __name__ == '__main__':
 
-    model = GptOss20b()
-    model.load(location=r'/home/eric/Repos/model_cache')
-    response = model.ask(prompt='Name a primary color.')
+    # model = GptOss20b()
+    # model.load(location=<path to model cache>)  # NOTE: set <path to model cache>.
+    # response = model.ask(prompt='Name a primary color.')
 
-    print(response)
+    # print(response)
 
     pass

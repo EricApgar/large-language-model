@@ -204,10 +204,10 @@ def get_good_token_start(token_list: list[str]) -> int:
 
 if __name__ == '__main__':
 
-    model = GptOss20bDev()
-    model.load(location=r'/home/eric/Repos/model_cache')
-    response = model.ask(prompt='Name a primary color.')
+    # model = GptOss20bDev()
+    # model.load(location=<path to model cache>)  # NOTE: set <path to model cache>.
+    # response = model.ask(prompt='Name a primary color.')
 
-    print(response)
+    # print(response)
 
     pass

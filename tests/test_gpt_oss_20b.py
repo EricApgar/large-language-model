@@ -7,7 +7,7 @@ invoking pytest so it only exists for that one command and does not persist
 in your shell:
 
     uv sync --extra openai
-    LLM_MODEL_CACHE=/home/yourname/Repos/model_cache pytest
+    LLM_MODEL_CACHE=<path to model cache dir> pytest
 
 Tests are skipped automatically if LLM_MODEL_CACHE is not set.
 
