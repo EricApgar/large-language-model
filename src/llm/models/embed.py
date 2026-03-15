@@ -5,10 +5,10 @@ import torch
 
 class EmbeddingModel:
 
-    def __init__(self, hf_token: str|None=None):
+    def __init__(self, name: str='all-mpnet-base-v2', hf_token: str|None=None):
 
+        self.name: str = name
         self.hf_token: str = hf_token
-        self.name: str = None
 
         self.location: str = None
         self.remote: bool = False
@@ -20,7 +20,6 @@ class EmbeddingModel:
 
     def load(self,
         location: str,
-        name: str='all-mpnet-base-v2',
         remote: bool=False,
         commit: str=None) -> None:
 
