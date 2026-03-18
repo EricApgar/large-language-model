@@ -1,5 +1,9 @@
 """
 Tests for llm.list_models.
+
+    uv sync --extra dev
+
+Make sure the virtual environment is active.
 """
 
 import pytest

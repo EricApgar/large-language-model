@@ -1,6 +1,6 @@
 [project]
 name = "llm"  # The pip install <name>.
-version = "0.4.2"
+version = "0.4.3"
 description = "Library for easy use of LLMs."
 readme = "README.md"
 authors = [
@@ -15,7 +15,6 @@ dependencies = [
     "torchvision",
     "sentence-transformers>=5.2.2",
     "llm-conversation",
-    "pytest>=8.0",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +36,9 @@ all = [
     "openai-harmony>=0.0.8",
     "peft>=0.18.1",
     "backoff>=2.2.1",
+]
+dev = [
+    "pytest>=8.0",
 ]
 
 [[tool.uv.index]]
