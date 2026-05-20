@@ -51,129 +51,70 @@ class Gemma4(Template):
     def ask(self,
         prompt: str | Conversation,
         images: list[PillowImage.Image]=None,
-        max_tokens: int=1024,
-        # temperature: float=0.5,
-        # reasoning_level: str='low',
-        # top_p: float=0.95,
-        repetition_penalty: float=1.12) -> str:
+        max_tokens: int=1024) -> str:
 
         if not self.model:
             raise ValueError('Must load model before using! (see model.load())')
-        
-        if isinstance(prompt, str):  # Create a structured conversation from input.
+
+        formatted_messages = self._format_prompt(prompt=prompt, images=images)
+
+        text = self.processor.apply_chat_template(
+            formatted_messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            return_dict=True)
+
+        inputs = self.processor(text=text, images=images, return_tensors='pt').to(self.model.device)
+
+        input_len = inputs['input_ids'].shape[-1]
+
+        # Generate new tokens from the input via an LLM.
+        output = self.model.generate(**inputs, max_new_tokens=max_tokens)
+      
+        response = self.processor.decode(output[0][input_len:], skip_special_tokens=True)
+
+        return response
+    
+    @staticmethod
+    def _format_prompt(
+        prompt: str | Conversation,
+        images: list[PillowImage.Image]=None) -> list[dict]:  # TODO: check type hint of result.
+        '''
+        '''
+
+        if isinstance(prompt, str):
             convo = Conversation()
             convo.add_response(role='user', text=prompt)
         else:
             convo = prompt
 
-        embedding = self._structure_inputs(convo=convo, images=images)
+        system_pieces = []
+        formatted_messages = []
 
-        generation_args = {
-            'max_new_tokens': max_tokens,
-            'do_sample': False}
+        if convo.overall_prompt:
+            system_pieces.append(convo.overall_prompt)
 
-        # Generate new tokens from the input via an LLM.
-        generated_tokens = self.model.generate(
-            **embedding,
-            eos_token_id=self.processor.tokenizer.eos_token_id,
-            repetition_penalty=repetition_penalty,
-            **generation_args)
+        if convo.context:
+            for context in convo.context:
+                system_pieces.append(context)
 
-        # Extract the explicit response tokens (sans thinking and original question).
-        response_tokens = generated_tokens[:, embedding['input_ids'].shape[1]:]
+        if system_pieces:  # Merge background context pieces.
+            formatted_messages.append({'role': 'system', 'content': ' '.join(system_pieces)})
 
-        # Translate the tokens to text (essentially a look up table).
-        response = self.processor.batch_decode(
-            response_tokens,
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=False)[0]
+        if convo.history:
+            for response in convo.history:
+                formatted_messages.append({'role': response.role, 'content': response.text})
 
-        return response
-    
+        if images:
+            last_text = formatted_messages[-1]['content']
+            formatted_messages[-1]['content'] = [{'type': 'image', 'image': i} for i in images] + [{'type': 'text', 'text': last_text]
 
-    def _structure_inputs(self, convo: Conversation, images: list=None) -> dict:
-        '''
-        Structure the input convo and images into the expected format
-        to get a good clean LLM response. Embedd it and prepare for LLM
-        token generation.
-        '''
-
-        if not convo.overall_prompt:
-            convo.set_overall_prompt(text='')
-
-        system_prompt = convo.overall_prompt + ' '.join(convo.context)
-        messages = [{
-            'role': 'system',
-            'content': system_prompt}] + [{
-                'role': i.role,
-                'content': i.text} for i in convo.history]
-
-        if images:  # Modify last item in convo to carry image tags.
-            image_tags = ''.join([f'<|image_{i+1}|>' for i, _ in enumerate(images)])
-            last_role = messages[-1]['role']
-            messages[-1] = {'role': last_role, 'content': image_tags + messages[-1]['content']}
-
-        structured_prompt = self.processor.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True)
-
-        embedding = self.processor(
-            images=images,
-            text=structured_prompt,
-            return_tensors='pt').to(self.device)
-
-        return embedding
+        return formatted_messages
 
 
-    def _load_processor(self, num_images: int=1):
+    def _load_processor(self):
 
-        if num_images == 1:
-            num_crops = 16
-        else:
-            num_crops = 4
-
-        self.processor = AutoProcessor.from_pretrained(
-            pretrained_model_name_or_path=self.name,
-            trust_remote_code=True,  # self.remote,
-            num_crops=num_crops)
-
-        return
-
-
-    def _patch_dynamic_cache(self):
-        '''
-        Phi-4 lags the latest version of transformers. So the transformers
-        library introduces breaking changes. To fix this, we point Phi4 at
-        the commit that fixes the "missing prepare_inputs_for_generation()"
-        function and then we manually create the needed method for the dynamic
-        cache to fix the error.
-        '''
-
-        from transformers.cache_utils import Cache
-
-        def get_usable_length(self, new_seq_length: int, layer_idx: int=0) -> int:
-            prev_len = self.get_seq_length(layer_idx)
-
-            max_len = None
-            if hasattr(self, 'get_max_length'):
-                try:
-                    max_len = self.get_max_length()
-                except TypeError:
-                    max_len = self.get_max_length(layer_idx)
-            elif hasattr(self, 'get_max_cache_shape'):
-                try:
-                    shape = self.get_max_cache_shape(layer_idx)
-                    max_len = shape[2] if shape is not None else None
-                except Exception:
-                    max_len = None
-
-            if max_len is not None and prev_len + new_seq_length > max_len:
-                return max_len - new_seq_length
-            
-            return prev_len
-        
-        Cache.get_usable_length = get_usable_length
+        self.processor = AutoProcessor.from_pretrained(pretrained_model_name_or_path=self.name)
 
         return
     
